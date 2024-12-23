@@ -1,4 +1,4 @@
-import './style.css';
+import './styles/jass.css';
 
 // * All necessary DOM elements selected
 const searchForm: HTMLFormElement = document.getElementById(
@@ -7,43 +7,26 @@ const searchForm: HTMLFormElement = document.getElementById(
 const searchInput: HTMLInputElement = document.getElementById(
   'search-input'
 ) as HTMLInputElement;
-const eventsContainer = document.getElementById(
-  'events-body'
-) as HTMLDivElement;
-const parksContainer = document.getElementById('parks') as HTMLDivElement;
+const todayContainer = document.querySelector('#today') as HTMLDivElement;
+const forecastContainer = document.querySelector('#forecast') as HTMLDivElement;
 const searchHistoryContainer = document.getElementById(
   'history'
 ) as HTMLDivElement;
-
-interface Park {
-  id: string;
-  fullName: string;
-  description: string;
-  url: string;
-  designation: string;
-  images: ParkImage[];
-}
-
-interface ParkImage {
-  url: string;
-  title: string;
-  altText: string;
-}
-
-interface ParkEvent {
-  id: string;
-  title: string;
-  location: string;
-  description: string;
-  infourl: string;
-  datestart: string;
-  dateend: string;
-}
-
-interface State {
-  id: string;
-  name: string;
-}
+const heading: HTMLHeadingElement = document.getElementById(
+  'search-title'
+) as HTMLHeadingElement;
+const weatherIcon: HTMLImageElement = document.getElementById(
+  'weather-img'
+) as HTMLImageElement;
+const tempEl: HTMLParagraphElement = document.getElementById(
+  'temp'
+) as HTMLParagraphElement;
+const windEl: HTMLParagraphElement = document.getElementById(
+  'wind'
+) as HTMLParagraphElement;
+const humidityEl: HTMLParagraphElement = document.getElementById(
+  'humidity'
+) as HTMLParagraphElement;
 
 /*
 
@@ -51,97 +34,127 @@ API Calls
 
 */
 
-// * Function to get parks by state
-const getParksByState = async (state: string) => {
-  try {
-    //TODO: update this function to take in the name of a state and fetch all national parks in that state.  Return the resulting array of parks.
-    console.log(
-      'complete the `getParksByState` function in cilent/src/main.ts'
-    );
-  } catch (err) {
-    console.log('Error:', err);
-    return err;
-  }
+const fetchWeather = async (cityName: string) => {
+  const response = await fetch('/api/weather/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ cityName }),
+  });
+
+  const weatherData = await response.json();
+
+  console.log('weatherData: ', weatherData);
+
+  renderCurrentWeather(weatherData[0]);
+  renderForecast(weatherData.slice(1));
 };
 
-//*Function to delete state from history
-const deledStateFromHistory = async (id: string) => {
-  //TODO: update this function to take in the id of a saved state and delete that state from search history.
-  console.log(
-    'complete the `deleteStateFromHistory` function in cilent/src/main.ts'
-  );
+const fetchSearchHistory = async () => {
+  const history = await fetch('/api/weather/history', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return history;
 };
 
-// * Function to get future events by state
-
-const getEventsByState = async (state: string) => {
-  //TODO: update this function to take in a state and fetch all events happening in national parks in that state. Return the resulting array of events.
-  console.log('complete the `getEventsByState` function in cilent/src/main.ts');
+const deleteCityFromHistory = async (id: string) => {
+  await fetch(`/api/weather/history/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 };
-// * Function to get saved searches
 
-const getHistory = async () => {
-  try {
-    //TODO: update this function to fetch all previously searched states. Return the resulting array of states.
-    console.log('complete the `getHistory` function in cilent/src/main.ts');
-  } catch (err) {
-    console.log('Error:', err);
-    return err;
-  }
-};
 /*
 
 Render Functions
 
 */
 
-// * Function to render parks
+const renderCurrentWeather = (currentWeather: any): void => {
+  const { city, date, icon, iconDescription, tempF, windSpeed, humidity } =
+    currentWeather;
 
-const renderParks = (parks: Park[]) => {
-  parksContainer.innerHTML = '';
+  // convert the following to typescript
+  heading.textContent = `${city} (${date})`;
+  weatherIcon.setAttribute(
+    'src',
+    `https://openweathermap.org/img/w/${icon}.png`
+  );
+  weatherIcon.setAttribute('alt', iconDescription);
+  weatherIcon.setAttribute('class', 'weather-img');
+  heading.append(weatherIcon);
+  tempEl.textContent = `Temp: ${tempF}°F`;
+  windEl.textContent = `Wind: ${windSpeed} MPH`;
+  humidityEl.textContent = `Humidity: ${humidity} %`;
 
-  for (const park of parks) {
-    const parkCard = createParkCard(park);
-    parksContainer.appendChild(parkCard);
+  if (todayContainer) {
+    todayContainer.innerHTML = '';
+    todayContainer.append(heading, tempEl, windEl, humidityEl);
   }
 };
 
-// * Function to render events
+const renderForecast = (forecast: any): void => {
+  const headingCol = document.createElement('div');
+  const heading = document.createElement('h4');
 
-const renderEvent = (event: ParkEvent) => {
-  eventsContainer.innerHTML = '';
+  headingCol.setAttribute('class', 'col-12');
+  heading.textContent = '5-Day Forecast:';
+  headingCol.append(heading);
 
-  const eventHTML = createEventHTML(event);
-  eventsContainer.innerHTML = eventHTML;
+  if (forecastContainer) {
+    forecastContainer.innerHTML = '';
+    forecastContainer.append(headingCol);
+  }
+
+  for (let i = 0; i < forecast.length; i++) {
+    renderForecastCard(forecast[i]);
+  }
 };
 
-const renderHistory = async (history: State[]) => {
-  try {
-    if (searchHistoryContainer) {
-      searchHistoryContainer.innerHTML = '';
+const renderForecastCard = (forecast: any) => {
+  const { date, icon, iconDescription, tempF, windSpeed, humidity } = forecast;
 
-      if (!history.length) {
-        searchHistoryContainer.innerHTML =
-          '<p class="col-12 text-center">No Previous Search History</p>';
-      }
+  const { col, cardTitle, weatherIcon, tempEl, windEl, humidityEl } =
+    createForecastCard();
 
-      // * Start at end of history array and count down to show the most recent cities at the top.
-      for (let i = history.length - 1; i >= 0; i--) {
-        const historyBtn = buildHistoryListItem(history[i]);
-        searchHistoryContainer.append(historyBtn);
-      }
+  // Add content to elements
+  cardTitle.textContent = date;
+  weatherIcon.setAttribute(
+    'src',
+    `https://openweathermap.org/img/w/${icon}.png`
+  );
+  weatherIcon.setAttribute('alt', iconDescription);
+  tempEl.textContent = `Temp: ${tempF} °F`;
+  windEl.textContent = `Wind: ${windSpeed} MPH`;
+  humidityEl.textContent = `Humidity: ${humidity} %`;
+
+  if (forecastContainer) {
+    forecastContainer.append(col);
+  }
+};
+
+const renderSearchHistory = async (searchHistory: any) => {
+  const historyList = await searchHistory.json();
+
+  if (searchHistoryContainer) {
+    searchHistoryContainer.innerHTML = '';
+
+    if (!historyList.length) {
+      searchHistoryContainer.innerHTML =
+        '<p class="text-center">No Previous Search History</p>';
     }
-  } catch (err) {
-    console.log(err);
-  }
-};
 
-const getAndRenderHistory = async () => {
-  try {
-    const history = await getHistory();
-    renderHistory(history);
-  } catch (err) {
-    console.log(err);
+    // * Start at end of history array and count down to show the most recent cities at the top.
+    for (let i = historyList.length - 1; i >= 0; i--) {
+      const historyItem = buildHistoryListItem(historyList[i]);
+      searchHistoryContainer.append(historyItem);
+    }
   }
 };
 
@@ -151,104 +164,50 @@ Helper Functions
 
 */
 
-// * Function to create the park cards
+const createForecastCard = () => {
+  const col = document.createElement('div');
+  const card = document.createElement('div');
+  const cardBody = document.createElement('div');
+  const cardTitle = document.createElement('h5');
+  const weatherIcon = document.createElement('img');
+  const tempEl = document.createElement('p');
+  const windEl = document.createElement('p');
+  const humidityEl = document.createElement('p');
 
-const createParkCard = (park: Park) => {
-  const parkCard = document.createElement('div');
-  parkCard.classList.add('card', 'mb-3', 'card-rounded');
+  col.append(card);
+  card.append(cardBody);
+  cardBody.append(cardTitle, weatherIcon, tempEl, windEl, humidityEl);
 
-  const parkCardImage = document.createElement('img');
-  parkCardImage.classList.add('card-image');
-  parkCardImage.src = park.images[0].url;
-  parkCardImage.alt = park.images[0].altText;
+  col.classList.add('col-auto');
+  card.classList.add(
+    'forecast-card',
+    'card',
+    'text-white',
+    'bg-primary',
+    'h-100'
+  );
+  cardBody.classList.add('card-body', 'p-2');
+  cardTitle.classList.add('card-title');
+  tempEl.classList.add('card-text');
+  windEl.classList.add('card-text');
+  humidityEl.classList.add('card-text');
 
-  parkCard.appendChild(parkCardImage);
-
-  const parkCardHeader = document.createElement('div');
-  parkCardHeader.classList.add('card-header');
-
-  const parkCardLink = document.createElement('a');
-  parkCardLink.href = park.url;
-  parkCardLink.target = '_blank';
-
-  const parkCardTitle = document.createElement('h5');
-  parkCardTitle.classList.add('card-title');
-  parkCardTitle.textContent = park.fullName;
-
-  parkCardLink.appendChild(parkCardTitle);
-
-  const parkCardSubTitle = document.createElement('h6');
-  parkCardSubTitle.classList.add('card-subtitle', 'text-muted');
-  parkCardSubTitle.textContent = park.designation;
-
-  parkCardHeader.appendChild(parkCardLink);
-  parkCardHeader.appendChild(parkCardSubTitle);
-  parkCard.appendChild(parkCardHeader);
-
-  const parkCardBody = document.createElement('div');
-  parkCardBody.classList.add('card-body');
-
-  const parkCardText = document.createElement('p');
-  parkCardText.classList.add('card-text');
-  parkCardText.textContent = park.description;
-
-  parkCardBody.appendChild(parkCardText);
-  parkCard.appendChild(parkCardBody);
-
-  const cardColumn = createCardColumn();
-  cardColumn.appendChild(parkCard);
-
-  return cardColumn;
+  return {
+    col,
+    cardTitle,
+    weatherIcon,
+    tempEl,
+    windEl,
+    humidityEl,
+  };
 };
 
-const createCardColumn = () => {
-  const column = document.createElement('div');
-  column.classList.add('col-6', 'mb-4');
-  return column;
-};
-
-// * Function to create the event HTML
-
-const createEventHTML = (parkEvent: ParkEvent) => {
-  const eventHTML = `
-    <div class="card-header">
-      <h5 class="card-title">${parkEvent.title}</h5>
-      <h6 class="card-subtitle text-muted">${parkEvent.location}</h6>
-    </div>
-    <div class="card-body">
-      <p> For more information, visit the event website: <a href="${parkEvent.infourl}" target="_blank">${parkEvent.infourl}</a></p>
-      <p class="card-text">${parkEvent.description}</p>
-      <p class="card-text">Start Date: ${parkEvent.datestart}</p>
-      <p class="card-text">End Date: ${parkEvent.dateend}</p>
-    </div>
-  `;
-
-  return eventHTML;
-};
-
-// * Functions to create previous search buttons
-
-const buildHistoryListItem = (state: State) => {
-  const newBtn = createHistoryButton(state.name);
-  const deleteBtn = createDeleteButton();
-  deleteBtn.dataset.state = JSON.stringify(state);
-  const historyDiv = createHistoryDiv();
-  historyDiv.append(newBtn, deleteBtn);
-  return historyDiv;
-};
-
-const createHistoryDiv = () => {
-  const div = document.createElement('div');
-  div.classList.add('display-flex', 'gap-2', 'col-12', 'm-1');
-  return div;
-};
-
-const createHistoryButton = (state: string) => {
+const createHistoryButton = (city: string) => {
   const btn = document.createElement('button');
   btn.setAttribute('type', 'button');
   btn.setAttribute('aria-controls', 'today forecast');
   btn.classList.add('history-btn', 'btn', 'btn-secondary', 'col-10');
-  btn.textContent = state;
+  btn.textContent = city;
 
   return btn;
 };
@@ -269,56 +228,52 @@ const createDeleteButton = () => {
   return delBtnEl;
 };
 
+const createHistoryDiv = () => {
+  const div = document.createElement('div');
+  div.classList.add('display-flex', 'gap-2', 'col-12', 'm-1');
+  return div;
+};
+
+const buildHistoryListItem = (city: any) => {
+  const newBtn = createHistoryButton(city.name);
+  const deleteBtn = createDeleteButton();
+  deleteBtn.dataset.city = JSON.stringify(city);
+  const historyDiv = createHistoryDiv();
+  historyDiv.append(newBtn, deleteBtn);
+  return historyDiv;
+};
+
 /*
 
 Event Handlers
 
 */
 
-const handleSearchFormSubmit = async (event: Event) => {
+const handleSearchFormSubmit = (event: any): void => {
   event.preventDefault();
 
-  const state = searchInput.value.trim();
-  if (!state) {
-    return;
+  if (!searchInput.value) {
+    throw new Error('City cannot be blank');
   }
 
-  const parks = await getParksByState(state);
-  const events = await getEventsByState(state);
-  renderParks(parks);
-  if (events.message === 'No events found') {
-    eventsContainer.innerHTML = '<h3 class="text-center">No events found</h3>';
-    return;
-  }
-  renderEvent(events);
-
+  const search: string = searchInput.value.trim();
+  fetchWeather(search).then(() => {
+    getAndRenderHistory();
+  });
   searchInput.value = '';
-  getAndRenderHistory();
 };
 
-const handleSearchHistoryClick = async (event: any) => {
+const handleSearchHistoryClick = (event: any) => {
   if (event.target.matches('.history-btn')) {
-    const state = event.target.textContent;
-    const parks = await getParksByState(state);
-    const events = await getEventsByState(state);
-    renderParks(parks);
-    if (events.message === 'No events found') {
-      eventsContainer.innerHTML =
-        '<h3 class="text-center">No events found</h3>';
-      return;
-    }
-    renderEvent(events);
-
-    searchInput.value = '';
-    getAndRenderHistory();
+    const city = event.target.textContent;
+    fetchWeather(city).then(getAndRenderHistory);
   }
 };
 
 const handleDeleteHistoryClick = (event: any) => {
   event.stopPropagation();
-  const stateId = JSON.parse(event.target.getAttribute('data-state')).id;
-  console.log(stateId);
-  deledStateFromHistory(stateId).then(getAndRenderHistory);
+  const cityID = JSON.parse(event.target.getAttribute('data-city')).id;
+  deleteCityFromHistory(cityID).then(getAndRenderHistory);
 };
 
 /*
@@ -327,6 +282,10 @@ Initial Render
 
 */
 
-searchForm.addEventListener('submit', handleSearchFormSubmit);
-searchHistoryContainer.addEventListener('click', handleSearchHistoryClick);
+const getAndRenderHistory = () =>
+  fetchSearchHistory().then(renderSearchHistory);
+
+searchForm?.addEventListener('submit', handleSearchFormSubmit);
+searchHistoryContainer?.addEventListener('click', handleSearchHistoryClick);
+
 getAndRenderHistory();

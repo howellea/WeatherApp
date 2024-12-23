@@ -1,10 +1,8 @@
 import { Router } from 'express';
 const router = Router();
 
-import parkRoutes from './parkRoutes.js';
-import historyRoutes from './historyRoutes.js';
+import weatherRoutes from './weatherRoutes.js';
 
-router.use('/parks', parkRoutes);
-router.use('/history', historyRoutes);
+router.use('/weather', weatherRoutes);
 
 export default router;

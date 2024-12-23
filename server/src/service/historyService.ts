@@ -1,68 +1,17 @@
-import fs from 'node:fs/promises';
-import { v4 as uuidv4 } from 'uuid';
+// TODO: Define a City class with name and id properties
 
-class State {
-  name: string;
-  id: string;
-
-  constructor(name: string, id: string) {
-    this.name = name;
-    this.id = id;
-  }
-}
-
+// TODO: Complete the HistoryService class
 class HistoryService {
-  private async read() {
-    return await fs.readFile('db/db.json', {
-      flag: 'a+',
-      encoding: 'utf8',
-    });
-  }
-
-  private async write(states: State[]) {
-    return await fs.writeFile('db/db.json', JSON.stringify(states, null, '\t'));
-  }
-
-  async getStates() {
-    return await this.read().then((states) => {
-      let parsedStates: State[];
-
-      // If states isn't an array or can't be turned into one, send back a new empty array
-      try {
-        parsedStates = [].concat(JSON.parse(states));
-      } catch (err) {
-        parsedStates = [];
-      }
-
-      return parsedStates;
-    });
-  }
-
-  async addState(state: string) {
-    if (!state) {
-      throw new Error('state cannot be blank');
-    }
-
-    // Add a unique id to the state using uuid package
-    const newState: State = { name: state, id: uuidv4() };
-
-    // Get all cities, add the new city, write all the updated cities, return the newCity
-    return await this.getStates()
-      .then((states) => {
-        if (states.find((index) => index.name === state)) {
-          return states;
-        }
-        return [...states, newState];
-      })
-      .then((updatedStates) => this.write(updatedStates))
-      .then(() => newState);
-  }
-
-  async removeState(id: string) {
-    return await this.getStates()
-      .then((states) => states.filter((state) => state.id !== id))
-      .then((filteredStates) => this.write(filteredStates));
-  }
+  // TODO: Define a read method that reads from the searchHistory.json file
+  // private async read() {}
+  // TODO: Define a write method that writes the updated cities array to the searchHistory.json file
+  // private async write(cities: City[]) {}
+  // TODO: Define a getCities method that reads the cities from the searchHistory.json file and returns them as an array of City objects
+  // async getCities() {}
+  // TODO Define an addCity method that adds a city to the searchHistory.json file
+  // async addCity(city: string) {}
+  // * BONUS TODO: Define a removeCity method that removes a city from the searchHistory.json file
+  // async removeCity(id: string) {}
 }
 
 export default new HistoryService();
