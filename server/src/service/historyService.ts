@@ -5,26 +5,26 @@ import fs from 'node:fs/promises';
 
 class City { 
   name: string;
-  id_properties: string;
+  id: string;
 
-  constructor ( name:string, id_properties: string) {
+  constructor ( name:string, id: string) {
 this.name =name;
-this.id_properties= id_properties;
+this.id= id;
   }
 
 }
 
 // TODO: Complete the HistoryService class
 class HistoryService {
-  city: string | null;
+  city: string | null ;
 
-  constructor( city: string) { 
-
+  constructor( city: string | null = null) { 
+this.city = city;
   }
   private filePath = 'searchHistory.json';
 
   // TODO: Define a read method that reads from the searchHistory.json file
-  private async read(): Promise<any> {
+  private async read(): Promise<City[]> {
     try {
       const data = await fs.readFile(this.filePath, 'utf-8');
       return JSON.parse(data);
@@ -33,11 +33,11 @@ class HistoryService {
       return []; // Return an empty array if there is an error
     }
   }
-  }
+  
  
  
   // TODO: Define a write method that writes the updated cities array to the searchHistory.json file
-  private async write(cities: City[]):  {
+  private async write(cities: City[]): Promise<void> {
     try {
       await fs.writeFile(this.filePath, JSON.stringify(cities, null, 2));
     } catch (err) {
@@ -51,10 +51,10 @@ class HistoryService {
   }
   
   // TODO Define an addCity method that adds a city to the searchHistory.json file
-  async addCity(city: string) {
+  async addCity(name: string, id: string): Promise<void> {
 
     const cities = await this.getCities();
-    const newCity = new City(city);
+    const newCity = new City(name, id);
     cities.push(newCity);
     await this.write(cities);
   }
@@ -63,7 +63,7 @@ class HistoryService {
   // * BONUS TODO: Define a removeCity method that removes a city from the searchHistory.json file
   async removeCity(id: string) {
     let cities: any = await this.getCities();
-    cities = cities.filter((city: { id: any; }) => city.id !== id);
+    cities = cities.filter((city: City)=> city.id !==id)
     await this.write(cities);
   }
 }
