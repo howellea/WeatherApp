@@ -21,20 +21,21 @@ type Weather = {
 };
 
 
+
 // TODO: Complete the WeatherService class
 class WeatherService {
-  apiKey: string | undefined;
-  baseURL: string | undefined;
-  city: string | null;
-  locationData: Coordinates | null; 
+  private apiKey: string | undefined;
+  private baseURL: string | undefined;
+  private city: string | null;
+  private locationData: Coordinates | null; 
 
   // TODO: Define the baseURL, API key, and city name properties
 
-  constructor(apiKey: string | undefined , baseURL: string , locationData: Coordinates | null , city: string | null) {
-    this.apiKey = process.env.API_KEY ;//  API key in the environment variables
-    this.baseURL = process.env.API_BASE_URL ; //  OPENWEATHER  URL in the environment variables
+  constructor() {
+    this.apiKey = process.env.API_KEY || '';//  API key in the environment variables
+    this.baseURL = process.env.API_BASE_URL || ''; //  OPENWEATHER  URL in the environment variables
     this.locationData = null;
-    this.city= city;
+    this.city= null;
 
     if (!this.apiKey || !this.baseURL) {
       throw new Error('API key or base URL is not defined.');
@@ -167,7 +168,7 @@ private buildForecastArray(weatherData: any[]): any[] {
   async getWeatherForCity(city: string): Promise<any> {
     try {
       const coordinates = await this.fetchAndDestructureLocationData(city);
-
+this.getWeatherForCity
       const currentWeatherData = await this.fetchWeatherData(coordinates);
 
       const parsedWeather = this.parseCurrentWeather(currentWeatherData);
@@ -185,5 +186,5 @@ private buildForecastArray(weatherData: any[]): any[] {
   }
 }
 
-
+// Export an instance of WeatherService
 export default new WeatherService();
