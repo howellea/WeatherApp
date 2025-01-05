@@ -17,7 +17,7 @@ router.post('/',async (req: Request, res: Response) => {
  
 
   try {
-    const { cityName }= req.body;
+    const { cityName } = req.body;
     console.log(requestId, cityName);
 
 // POST Request with city name to retrieve weather data from the history service 
@@ -25,8 +25,8 @@ router.post('/',async (req: Request, res: Response) => {
 
 // POST Request with city name to retrieve weather data from the weather service
     const weather = await weatherService.getWeatherForCity(cityName, requestId);  
-    return  res.status(200).json([weather, "weather"]);
-
+    // return  res.status(200).json([weather, "weather"]);
+    return  res.status(200).json(weather);
 } catch (error: any) {
   console.log(requestId, error)
 console.error(error);
@@ -54,34 +54,27 @@ router.get('/history', async (req: Request, res: Response) => {
   console.error(error);
 res.status(500).send({ error: 'Failed to retrieve search history' });
 }
-  // historyService.getCities
-//
+
 });
 
-// // GET search history
-// router.get('/history', async (_req: Request, res: Response) => {
-//   try {
-//     const cities = await historyService.getCities();
-//     res.json(cities);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Failed to retrieve search history' });
-//   }
-// });
 
 
-// // * BONUS TODO: DELETE city from search history
-// router.delete('/history/:id', async (req: Request, res: Response) => {
-//   try {
-//     if (!req.params.id) {
-//       res.status(400).json({ msg: 'City id is required' });
-//     }
-//     await historyService.removeCity(req.params.id); 
-//     res.json({ success: 'City successfully removed from search history' });
-//    } catch (err) {
-//     console.log(err);
-//     res.status(500).json(err);
-//   }
-// });
+// * BONUS TODO: DELETE city from search history
+router.delete('/history/:id', async (req: Request, res: Response) => {
+  const requestId = randomUUID();
+  res.status(200).send("City successfully removed from search history");
+  const { id }=req.params;
+  console.log(requestId, id)
+  try {
+    if (!req.params.id) {
+      res.status(400).json({ msg: 'City id is required' });
+    }
+    await historyService.removeCity(req.params.id); 
+    res.json({ success: 'City successfully removed from search history' });
+   } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
 
 export default router;

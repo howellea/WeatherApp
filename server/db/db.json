@@ -1,3 +1,22 @@
 [
-  
+  {
+    "id": 17,
+    "name": "texas city"
+  },
+  {
+    "id": 2,
+    "name": "Panama City"
+  },
+  {
+    "id": 3,
+    "name": "Orlando"
+  },
+  {
+    "id": 4,
+    "name": "Orlando"
+  },
+  {
+    "id": 5,
+    "name": "New York"
+  }
 ]

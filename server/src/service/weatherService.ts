@@ -17,13 +17,13 @@ interface Coordinates {
 
 // TODO: Define a class for the Weather object
 type Weather = {
-      city: string,
-      date: number, 
-      icon: string,
-      iconDescription: string, 
-      tempF: number, 
-      windSpeed: number, 
-      humidity: number, 
+  city: string;
+  date: string;
+  icon: string;
+  iconDescription: string;
+  tempF: number;
+  windSpeed: number;
+  humidity: number;
 };
 
 
@@ -105,7 +105,7 @@ return data
     const weatherQuery = this.buildWeatherQuery(requestId, coordinates);
 
     try {
-      const response = await fetch(`${this.baseURL}/data/2.5/weather?${weatherQuery}`);
+      const response = await fetch(`${this.baseURL}/data/2.5/forecast?${weatherQuery}&units=imperial`);
 
       if (!response.ok) {
         throw new Error(`Error fetching weather data: ${response.statusText}`);
@@ -129,14 +129,14 @@ return data
       // tempF, 
       // windSpeed, 
       // humidity 
-
-const city = response.name;
-const date = new Date( response.dt*1000).toLocaleDateString;
-const icon = response.weather[0].icon;
-const iconDescription =response.weather[0].description;
-const tempF = response.main.temp;
-const windSpeed = response.wind.speed
-const  humidity =response.main.humidity
+const currentweather =response.list[0];
+const city = response.city.name;
+const date = currentweather.dt_txt;
+const icon = currentweather.weather[0].icon;
+const iconDescription =currentweather.weather[0].description;
+const tempF = currentweather.main.temp;
+const windSpeed = currentweather.wind.speed;
+const  humidity =currentweather.main.humidity;
 
 
 return  { city, date, icon, iconDescription, tempF, windSpeed, humidity }
@@ -144,20 +144,20 @@ return  { city, date, icon, iconDescription, tempF, windSpeed, humidity }
 
     // TODO: Complete buildForecastArray method
 // This method should create an array of forecast data from the weather data.
-  private buildForecastArray(requestId: string, currentWeather: Weather, weatherData: any[]): any[] {
+  private buildForecastArray(requestId: string, currentWeather : Weather, weatherData: any[]) {
     // Implement logic to structure forecast data
-console.log (requestId, "this is buildForecastArray" )
-  //const { date, icon, iconDescription, tempF, windSpeed, humidity } = forecast;
-
-  // const { col, cardTitle, weatherIcon, tempEl, windEl, humidityEl } = createForecastCard();
-
-  return weatherData.map((forecast: any) => ({
-      date: forecast.dt_txt.split(' ')[0],
-      temp: forecast.main.temp,
-      wind: forecast.wind.speed,
-      humidity: forecast.main.humidity,
-      icon: forecast.weather[0].icon,
-    }));
+      console.log(requestId, "buildForecastArray");
+      const forecast = weatherData.slice(1, 6).map((forecastarray) => {
+       const city = currentWeather.city
+        const date = forecastarray.dt_txt;
+        const icon = forecastarray.weather[0].icon;
+        const iconDescription = forecastarray.weather[0].description;
+        const tempF = forecastarray.main.temp;
+        const windSpeed = forecastarray.wind.speed;
+        const humidity = forecastarray.main.humidity;
+        return { city, date, icon, iconDescription, tempF, windSpeed, humidity };
+      });
+return [currentWeather].concat(forecast);
   }
   // TODO: Complete getWeatherForCity method
   // You already have a good start on this method. You can integrate the other methods to complete it.
@@ -167,17 +167,15 @@ async getWeatherForCity(city: string, requestId: string): Promise<any> {
     this.city = city;
     const coordinates = await  this.fetchAndDestructureLocationData(requestId);
     const weatherdata = await this.fetchWeatherData(requestId,coordinates);
-    console.log(requestId,"weatherData", weatherdata );
-    const  currentWeather = this.parseCurrentWeather(requestId,weatherdata);
-    const forecast = this.buildForecastArray( requestId, currentWeather, weatherdata)
-    return {currentWeather, forecast};
+    const  currentWeather = await this.parseCurrentWeather(requestId,weatherdata);
+    const forecast =this.buildForecastArray(requestId, currentWeather, weatherdata.list) ;
+    return forecast;
   } 
    
    catch (error) {
           console.error(error);
           throw new Error(`Failed to fetch weather for city: ${city}`);
         }
-      }
-    }
+      }}
 // Export an instance of WeatherService
 export default new WeatherService();

@@ -59,11 +59,12 @@ private fileHistoryPath: string =path.resolve(__dirname, '../../db/db.json');
 
 
 //   // * BONUS TODO: Define a removeCity method that removes a city from the searchHistory.json file
-// //   async removeCity(id: string) {
-// //     let cities: any = await this.getCities();
-// //     cities = cities.filter((city: City)=> city.id !==id)
-// //     await this.write(cities);
-// //   }
+  async removeCity(id: string) {
+    const cities: any = await this.getCities();
+    const cityfilter = cities.filter((city: City)  => city.id !== id)
+
+    await this.write(cityfilter);
+  }
 }
 
 export default new HistoryService();
