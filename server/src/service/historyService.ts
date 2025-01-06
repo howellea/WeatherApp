@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
+import { randomUUID } from 'node:crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 interface City { 
 name: string;
-id: number;
+id: string;
 }
 
 // // TODO: Complete the HistoryService class
@@ -50,8 +51,8 @@ private fileHistoryPath: string =path.resolve(__dirname, '../../db/db.json');
 
     const cities = await this.read();
 
-    const id = cities.length + 1;
-    const newCity = { id, name: city}
+    const id = randomUUID();
+    const newCity = { id, name: city};
    
     cities.push(newCity); 
     await this.write(cities);
@@ -60,10 +61,11 @@ private fileHistoryPath: string =path.resolve(__dirname, '../../db/db.json');
 
 //   // * BONUS TODO: Define a removeCity method that removes a city from the searchHistory.json file
   async removeCity(id: string) {
-    const cities: any = await this.getCities();
+    const cities: any = await this.read();
     const cityfilter = cities.filter((city: City)  => city.id !== id)
 
     await this.write(cityfilter);
+    return this.write(cityfilter);
   }
 }
 

@@ -46,9 +46,7 @@ router.get('/history', async (req: Request, res: Response) => {
  try{
   const cities = await historyService.getCities();
   res.status(200).json(cities);
-  
-  // if (!req.params.id) {
-  // res.status(400).json({ msg: 'City id is required' });
+
 } catch (error) {
   console.log(requestId, "error");
   console.error(error);
@@ -62,15 +60,14 @@ res.status(500).send({ error: 'Failed to retrieve search history' });
 // * BONUS TODO: DELETE city from search history
 router.delete('/history/:id', async (req: Request, res: Response) => {
   const requestId = randomUUID();
-  res.status(200).send("City successfully removed from search history");
-  const { id }=req.params;
-  console.log(requestId, id)
+  const { id }= req.params;
+  console.log(requestId, "Delete/api/weather/history/:id", req.ip);
   try {
     if (!req.params.id) {
       res.status(400).json({ msg: 'City id is required' });
     }
-    await historyService.removeCity(req.params.id); 
-    res.json({ success: 'City successfully removed from search history' });
+    await historyService.removeCity(id); 
+    res.status(200).send('City ${id} successfully removed from search history');
    } catch (err) {
     console.log(err);
     res.status(500).json(err);
